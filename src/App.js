@@ -8,15 +8,8 @@ import Welcome from './components/welcome/Welcome';
 import Profile from './components/profile/profile';
 import NotFound from './components/not-found/NotFound';
 import Verify from './components/verify/Verify';
-import FacebookLogin from 'react-facebook-login';
 function App() {
-  const responseFacebook = (response) => {
-    console.log(response);
-    
-  }
-  const componentClicked = (data) =>{
-    console.log(data);
-  }
+
   return (
     <div className="App">
       <BrowserRouter>
@@ -28,12 +21,12 @@ function App() {
           <Route path='/verify' element={<Verify />} />
           <Route path='*' element={<NotFound />} />
         </Routes>
-        <FacebookLogin
+        {/* <FacebookLogin
           appId="948115842973929"
           autoLoad={true}
           fields="name,email,picture"
           onClick={componentClicked}
-          callback={responseFacebook} />
+          callback={responseFacebook} /> */}
       </BrowserRouter>
       <ToastContainer />
     </div>
