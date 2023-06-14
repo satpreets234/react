@@ -13,7 +13,7 @@ function Profile() {
     }
     checkAuth()
 
-}, [])
+}, )
   return (
     <div>Welcome to your profile</div>
   )

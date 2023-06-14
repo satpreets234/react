@@ -17,7 +17,7 @@ function Login() {
         }
         checkAuth()
 
-    }, [])
+    },)
     const handleLogin = async (loginData) => {
         if (loginData.password === '' || loginData.email === '') {
             toast.error("Please enter all details !");

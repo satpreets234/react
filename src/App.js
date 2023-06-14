@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Register from './components/register/Register';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

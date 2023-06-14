@@ -18,7 +18,7 @@ function Welcome() {
         }
         checkAuth()
 
-    }, [])
+    },)
     const getProfileData = async () => {
         try {
             const token = localStorage.getItem('token')
