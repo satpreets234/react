@@ -8,11 +8,15 @@ import Welcome from './components/welcome/Welcome';
 import Profile from './components/profile/profile';
 import NotFound from './components/not-found/NotFound';
 import Verify from './components/verify/Verify';
+import { createContext, useReducer } from 'react';
+import { initialState,reducer } from './store/reducer';
+export const AuthContext =createContext();
 function App() {
-
+  const [state, dispatch] = useReducer(reducer, initialState);
   return (
     <div className="App">
-      <BrowserRouter>
+          <AuthContext.Provider value={{state,dispatch}}>
+          <BrowserRouter>
         <Routes>
           <Route path='/' element={<Register />} />
           <Route path='/login' element={<Login />} />
@@ -20,14 +24,9 @@ function App() {
           <Route path='/profile' element={<Profile />} />
           <Route path='/verify' element={<Verify />} />
           <Route path='*' element={<NotFound />} />
-        </Routes>
-        {/* <FacebookLogin
-          appId="948115842973929"
-          autoLoad={true}
-          fields="name,email,picture"
-          onClick={componentClicked}
-          callback={responseFacebook} /> */}
+        </Routes>        
       </BrowserRouter>
+      </AuthContext.Provider>
       <ToastContainer />
     </div>
   );
