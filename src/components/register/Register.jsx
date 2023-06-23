@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, {  useRef, useState } from 'react'
 import './Register.css';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -7,29 +7,51 @@ import axios from 'axios';
 import FacebookLogin from 'react-facebook-login';
 import { GoogleLogin } from '@react-oauth/google';
 import TwitterLogin from 'react-twitter-auth';
-import { AuthContext } from '../../App';
 import GitHubLogin from 'react-github-login';
-import InstagramLogin from 'react-instagram-login'
-import ReactLoginMS from "react-ms-login";
+import { useDispatch } from 'react-redux';
+import { signup } from '../../redux/actions/index'
+import ReCAPTCHA from "react-google-recaptcha";
+import { IconButton, InputAdornment, TextField } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 function Register() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
-    email: '', password: '', confirmPassword: ''
+    email: '', password: '', confirmPassword: '', userType: ''
   })
-  // useEffect(() => {
-  //   async function checkAuth() {
-  //     const authenticated = await isAuthenticated();
-  //     console.log(authenticated, 'ertyu');
-  //     if (authenticated) {
-  //       navigate('/welcome')
-  //     }
-  //   }
-  //   checkAuth()
+  const dispatch = useDispatch();
 
-  // }, [])
+  const captchaRef = useRef()
+
+  const showPopup = () => {
+    const LinkedInApi = {
+      clientId: '7790p9ne2uqcbq',
+      redirectUrl: 'http://localhost:3001/welcome',
+      oauthUrl: 'https://www.linkedin.com/oauth/v2/authorization?response_type=code',
+      scope: 'r_liteprofile%20r_emailaddress',
+      state: '123456'
+    };
+    const {  scope } = LinkedInApi;
+    console.log(scope);
+    const oauthUrl1 = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=7790p9ne2uqcbq&scope=r_liteprofile&r_emailaddress&state=123456&redirect_uri=http://localhost:3001/welcome`;
+    const width = 450,
+      height = 730,
+      left = window.screen.width / 2 - width / 2,
+      top = window.screen.height / 2 - height / 2;
+    window.open(
+      oauthUrl1,
+      'Linkedin',
+      'menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=' +
+      width +
+      ', height=' +
+      height +
+      ', top=' +
+      top +
+      ', left=' +
+      left
+    );
+  };
   const responseFacebook = async (response, e) => {
     try {
-      console.log(response);
       const responseApi = await axios.post('http://localhost:8070/api/user/signup-facebook', {
         email: response?.email,
         name: response.name,
@@ -41,34 +63,28 @@ function Register() {
       console.log(error);
     }
   }
-  const { state, dispatch } = useContext(AuthContext);
   const twitterError = (error) => {
-    console.log(2);
     console.log(error);
   }
   const responseTwitter = async (response) => {
     try {
-      console.log(1);
-      console.log(response);
-      const response = await axios.post('http://localhost:8070/api/user/login-twitter', {
+      const response1 = await axios.post('http://localhost:8070/api/user/login-twitter', {
         email: response?.email,
         name: response.name,
         provider_id: response.id,
         provider_name: "twitter",
       })
-      console.log(response);
+      console.log(response1);
     } catch (error) {
       console.log(error);
     }
   }
-  const [data, setData] = useState({ errorMessage: "", isLoading: false });
   const onSuccessGithub = async (response) => {
     try {
-      console.log('9');
       if (response) {
         const loginResponse = await axios.post(`http://localhost:8070/api/user/login-github`, response);
         console.log(loginResponse);
-        if (loginResponse.status == 200) {
+        if (loginResponse.status === 200) {
           console.log(loginResponse.data.token);
           localStorage.setItem('token', loginResponse.data.token)
           navigate('/welcome')
@@ -82,7 +98,6 @@ function Register() {
   }
 
   const responseMessage = async (response) => {
-    console.log(response);
     try {
 
       const responseApi = await axios.post('http://localhost:8070/api/user/login-gmail', {
@@ -97,33 +112,42 @@ function Register() {
       console.log(error);
     }
   };
-  const responseInstagram = (response) => {
-    console.log(response);
-  }
+
   const handleSubmit = async (userData) => {
-    if (userData.password === '' || userData.email === '' || userData.confirmPassword === '') {
-      toast.error("please provide all details !");
-    }
-    else if (userData.password !== userData.confirmPassword) {
-      toast.error("passwords doesn't match");
+    const token = captchaRef.current.getValue();
+    if (!token) {
+      return toast.error('Please verify captcha')
     } else {
-      try {
-        const data = await axios.post('http://192.168.15.201:8070/api/user/signup', userData)
-        if (data.status === 200) {
-          toast.success('Register successfully !')
-          setUserData({ ...userData, email: '', password: '', confirmPassword: '' })
-          navigate('/login');
-        } else {
-          toast.error(data.data);
+      if (userData.password === '' || userData.email === '' || userData.confirmPassword === '') {
+        toast.error("please provide all details !");
+      }
+      else if (userData.password !== userData.confirmPassword) {
+        toast.error("passwords doesn't match");
+      } else {
+        try {
+          userData = { ...userData, token }
+          const data = await axios.post('http://localhost:8070/api/user/signup', userData)
+          if (data.status === 200) {
+            toast.success('Register successfully !')
+            setUserData({ ...userData, email: '', password: '', confirmPassword: '' })
+            dispatch(signup(data.data))
+            navigate('/login');
+          } else {
+            toast.error(data.data);
+            setUserData({ ...userData, email: '', password: '', confirmPassword: '' })
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error?.response.data);
           setUserData({ ...userData, email: '', password: '', confirmPassword: '' })
         }
-      } catch (error) {
-        console.log(error);
-        toast.error(error?.response.data);
-        setUserData({ ...userData, email: '', password: '', confirmPassword: '' })
       }
     }
   }
+  const handleUserTypeChange = (userType) => {
+    setUserData({ ...userData, userType });
+  };
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <div>
       {/* <h1>hello world!</h1> */}
@@ -137,12 +161,36 @@ function Register() {
           <input type="text" value={userData.email} onChange={(e) => { setUserData({ ...userData, email: e.target.value }) }} placeholder="Enter Email" name="email" id="email" required />
 
           <label htmlFor="psw"><b>Password</b></label>
-          <input type="password" value={userData.password} onChange={(e) => { setUserData({ ...userData, password: e.target.value }) }} placeholder="Enter Password" name="psw" id="psw" required />
-
+          {/* <input type={showPassword ? "text" : "password"} value={userData.password} placeholder="Enter Password" name="psw" id="psw" required /> */}
+          <TextField
+            type={showPassword ? 'text' : 'password'}
+            value={userData.password}
+            onChange={(e) => { setUserData({ ...userData, password: e.target.value }) }}
+            label="Password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                    <IconButton onClick={()=>setShowPassword(!showPassword)}>
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
           <label htmlFor="psw-repeat"><b>Repeat Password</b></label>
           <input type="password" value={userData.confirmPassword} onChange={(e) => { setUserData({ ...userData, confirmPassword: e.target.value }) }} placeholder="Repeat Password" name="psw-repeat" id="psw-repeat" required />
           <hr />
+          <h3>User Role</h3>
+          <label htmlFor="admin">
+            <b>Admin</b>
+            <input type="radio" name="userType" checked={userData.userType === 'admin'} onChange={() => handleUserTypeChange('admin')} />
+          </label>
 
+          <label htmlFor="user">
+            <b>User</b>
+            <input type="radio" name="userType" checked={userData.userType === 'user'} onChange={() => handleUserTypeChange('user')} />
+          </label>
+          <ReCAPTCHA ref={captchaRef} sitekey='6LePJrImAAAAAMZsmoydRzpMZItgWIiw5uiwPptp' />
           <button type="button" onClick={() => { handleSubmit(userData) }} className="registerbtn">Register</button>
         </div>
 
@@ -182,14 +230,8 @@ function Register() {
         onSuccess={responseInstagram}
         onFailure={responseInstagram}
       /> */}
-      <ReactLoginMS
-        clientId="8d12a44f-9712-41ba-871c-b9f13da29e2a"
-        redirectUri="http://localhost:3001/welcome"
-        cssClass="ms-login"
-        btnContent="LOGIN WITH MICROSOFT"
-        responseType="token"
-        handleLogin={(data) => console.log(data)}
-      />
+      <h1 onClick={showPopup}>linkedin login</h1>
+
     </div>
   )
 }

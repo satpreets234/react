@@ -1,21 +1,12 @@
-import React, { useEffect } from 'react'
-import { isAuthenticated } from '../../common';
-import { useNavigate } from 'react-router-dom';
+import React from 'react'
+import { useSelector } from 'react-redux';
 
 function Profile() {
-  const navigate=useNavigate();
-  useEffect(() => {
-    async function checkAuth() {
-        const authenticated = await isAuthenticated();
-        if (!authenticated){
-          navigate('/login');
-        }
-    }
-    checkAuth()
-
-}, )
-  return (
+const profileData=useSelector((state)=> state.authReducer.userData)
+  return (<>
     <div>Welcome to your profile</div>
+    <h2>{profileData.token}</h2>
+    </>
   )
 }
 

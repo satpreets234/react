@@ -6,7 +6,7 @@ export const isAuthenticated = async () => {
         return false;
     } else {
         try {
-            const userData = await axios.get('http://192.168.15.201:8070/api/user/profile-data', {
+            const userData = await axios.get('http://localhost:8070/api/user/profile-data', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -23,7 +23,8 @@ export const isAuthenticated = async () => {
     }
 }
 
-export const logout = () => {
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-};
+// export const logout = () => {
+//     localStorage.removeItem('token');
+//     localStorage.removeItem('tasks')
+//     window.location.href = '/login';
+// };

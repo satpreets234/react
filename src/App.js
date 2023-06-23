@@ -8,25 +8,61 @@ import Welcome from './components/welcome/Welcome';
 import Profile from './components/profile/profile';
 import NotFound from './components/not-found/NotFound';
 import Verify from './components/verify/Verify';
-import { createContext, useReducer } from 'react';
-import { initialState,reducer } from './store/reducer';
-export const AuthContext =createContext();
+import { createContext, useState } from 'react';
+import Counter from './components/counter/Counter';
+import store from './redux/store';
+import { Provider } from 'react-redux';
+import UserTable from './components/UserManagement/UserManagement';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+
+export const AuthContext = createContext();
+
 function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+
+  const handleLogin = () => {
+    // Perform authentication logic and set isAuthenticated to true
+    setIsAuthenticated(true);
+  };
+
+
+
   return (
     <div className="App">
-          <AuthContext.Provider value={{state,dispatch}}>
-          <BrowserRouter>
-        <Routes>
-          <Route path='/' element={<Register />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/welcome' element={<Welcome />} />
-          <Route path='/profile' element={<Profile />} />
-          <Route path='/verify' element={<Verify />} />
-          <Route path='*' element={<NotFound />} />
-        </Routes>        
-      </BrowserRouter>
-      </AuthContext.Provider>
+      <Provider store={store}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Register />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/welcome" element={
+              <ProtectedRoute>
+                <Welcome />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/verify" element={<Verify />} />
+            <Route path="/counter" element={
+              <ProtectedRoute>
+                <Counter />
+              </ProtectedRoute>
+            } />
+
+
+            {/* Protected Routes */}
+            <Route path="/user-management" element={
+              <ProtectedRoute>
+                <UserTable />
+              </ProtectedRoute>
+            } />
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </Provider>
       <ToastContainer />
     </div>
   );

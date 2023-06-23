@@ -12,7 +12,7 @@ function Verify() {
 
   async function verifyDetails() {
     try {
-      const verifyUser = await axios.post(`http://192.168.15.201:8070/api/user/verify`, {
+      const verifyUser = await axios.post(`http://localhost:8070/api/user/verify`, {
         userId: paramValue
       });
       if (verifyUser.status === 200) {
